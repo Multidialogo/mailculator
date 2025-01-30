@@ -14,8 +14,8 @@ docker compose --env-file .env.dev -f docker-compose.yml up
 
 Send some dummy queues:
 ```bash
-sudo chown -R michele:michele ./data && \
-sudo chown -R michele:michele ./tmp && \
+sudo chown -R "$(whoami):$(id -gn)" ./data && \
+sudo chown -R "$(whoami):$(id -gn)" ./tmp && \
 sudo ./generate_dummies.sh --ds
 ```
 

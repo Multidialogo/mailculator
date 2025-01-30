@@ -4,6 +4,7 @@ CREATE_QUEUES_URL="http://localhost:8101/email-queues"
 LOCAL_INPUT_DUMMY_FILES_DIR="./data/input"
 DUMMY_FILES_DIR="${LOCAL_INPUT_DUMMY_FILES_DIR}/dummies"
 OUTBOX_DIR="./data/maildir/outbox"
+USERS_DIR="./data/maildir/users"
 
 download_samples() {
   rm -rf "${DUMMY_FILES_DIR}"
@@ -60,33 +61,36 @@ get_random_files() {
   echo "${selected_files[@]}"
 }
 
-create_email_queue() {
+create_user_email_queues() {
   local userID=$((RANDOM % 1000))
-  local queueUUID=$(uuidgen)
 
-  # Number of messages to create
-  local num_messages=$((RANDOM % 100))
+  echo "Generating queues for user id ${userID}"
 
-  # Start the JSON array for the messages
-  local request_body='{"data":['
+  for ((q=0; q<$((RANDOM % 3)); q++)); do
+    local queueUUID=$(uuidgen)
+    echo "Generating queue ${queueUUID} for user id ${userID}"
 
-  # Loop through the number of messages and create a unique messageUUID for each
-  for ((i=0; i<num_messages; i++)); do
-    # Call get_random_files to get an array of random files
-    local random_attach_number=$((RANDOM % 6))
-    local files=($(get_random_files ${random_attach_number}))
-    # Construct the attachments JSON
-    local attachments_json="[]"
-    for file in "${files[@]}"; do
-      attachments_json=$(echo "$attachments_json" | jq ". + [\"$file\"]")
-    done
+    # Start the JSON array for the messages
+    local request_body='{"data":['
 
-    local messageUUID=$(uuidgen)
+    # Loop through the number of messages and create a unique messageUUID for each
+    local total_messages=$((RANDOM % 100))
+    for ((i=0; i<total_messages; i++)); do
+      echo "Generating ${i} attachments for queue ${queueUUID} for user id ${userID}"
 
-    # Construct each message's JSON object
-    local message=$(cat <<EOF
+      # Call get_random_files to get an array of random files
+      local files=($(get_random_files $((RANDOM % 6))))
+
+      # Construct the attachments JSON
+      local attachments_json="[]"
+      for file in "${files[@]}"; do
+        attachments_json=$(echo "$attachments_json" | jq ". + [\"$file\"]")
+      done
+
+      # Construct each message's JSON object
+      local message=$(cat <<EOF
 {
-  "id": "$userID:$queueUUID:$messageUUID",
+  "id": "$userID:$queueUUID:$(uuidgen)",
   "type": "email",
   "attributes": {
     "from": "sender@example.com",
@@ -104,32 +108,35 @@ create_email_queue() {
 EOF
 )
 
-    # Append the message to the request_body array
-    if [[ $i -gt 0 ]]; then
-      request_body="$request_body,$message"
-    else
-      request_body="$request_body$message"
-    fi
+      # Append the message to the request_body array
+      if [[ $i -gt 0 ]]; then
+        request_body="$request_body,$message"
+      else
+        request_body="$request_body$message"
+      fi
+    done
+
+    # Close the JSON array after the loop
+    request_body="$request_body]}"
+
+    # Send all messages for this queue in a single request
+    curl -X POST "${CREATE_QUEUES_URL}" \
+      -H "Content-Type: application/json" \
+      -d "$request_body"
   done
-
-  # Close the JSON array
-  request_body="$request_body]}"
-
-  # Use curl to call the API with the request body
-  curl -X POST "${CREATE_QUEUES_URL}" \
-    -H "Content-Type: application/json" \
-    -d "$request_body"
 }
 
+rm -rf "${OUTBOX_DIR}/users"
+rm -rf "${USERS_DIR}"
+
 if [[ "$1" == "--ds" ]]; then
-  download_samples
+  echo "Downloading samples..."
+  download_samples > /dev/null 2>&1
 fi
 
-rm -rf "${OUTBOX_DIR}"
 for i in {1..10}; do
-
-  echo "Creating email queue #$i"
-  create_email_queue
+  echo "Creating user ${i} queues"
+  create_user_email_queues > /dev/null 2>&1
 done
 
 
