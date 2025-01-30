@@ -6,6 +6,12 @@ DUMMY_FILES_DIR="${LOCAL_INPUT_DUMMY_FILES_DIR}/dummies"
 OUTBOX_DIR="./data/maildir/outbox"
 USERS_DIR="./data/maildir/users"
 
+FB_ADMIN_AUTH_TOKEN="TO-GET"
+FB_AUTH_URL="http://localhost:8102/api/login"
+FB_USER_CREATE_URL="http://localhost:8102/api/users"
+FB_ADMIN_USERNAME="admin"
+FB_ADMIN_PASSWORD="admin"
+
 download_samples() {
   rm -rf "${DUMMY_FILES_DIR}"
   rm -rf ./tmp
@@ -61,8 +67,57 @@ get_random_files() {
   echo "${selected_files[@]}"
 }
 
+get_file_browser_admin_auth_token() {
+  # Get the Bearer Token
+  FB_ADMIN_AUTH_TOKEN=$(curl -s -X POST "${FB_AUTH_URL}" \
+      -H "Content-Type: application/json" \
+      -d "{
+          \"username\": \"${FB_ADMIN_USERNAME}\",
+          \"password\": \"${FB_ADMIN_PASSWORD}\"
+      }")
+
+  # Debug: Print token (comment out in production)
+  echo "Authentication Token: ${FB_ADMIN_AUTH_TOKEN}"
+
+  # Check if token retrieval was successful
+  if [[ -z "${FB_ADMIN_AUTH_TOKEN}" ]]; then
+      echo "Failed to retrieve admin token. Exiting..."
+      exit 1
+  fi
+}
+
+generate_filebrowser_user() {
+  local JSON_PAYLOAD=$(cat <<EOF
+{"what":"user","which":[],"data":{"scope":"","locale":"it","viewMode":"list","singleClick":false,"sorting":{"by":"","asc":false},"perm":{"admin":false,"execute":false,"create":false,"rename":false,"modify":false,"delete":false,"share":false,"download":true},"commands":[],"hideDotfiles":true,"dateFormat":false,"username":"user${1}","password":"password${1}","rules":[],"lockPassword":true,"id":0}}
+EOF
+)
+
+  local RESPONSE=$(curl -s -w "%{http_code}" -X POST "${FB_USER_CREATE_URL}" \
+      -H "X-Auth: ${FB_ADMIN_AUTH_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d "$JSON_PAYLOAD")
+
+  # Get HTTP code and response body
+  local HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+  local RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
+
+  # Log the response body and status code
+  echo "Response: $HTTP_CODE"
+  echo "Response body: $RESPONSE_BODY"
+
+  if [ "$HTTP_CODE" -ne 201 ]; then
+     echo "Failed to create user user${i}. HTTP Response: $HTTP_CODE"
+     exit 1
+  else
+     echo "User user${i} created successfully!"
+  fi
+}
+
 create_user_email_queues() {
   local userID=$((RANDOM % 1000))
+
+  echo "Generating user on filebrowser server"
+  generate_filebrowser_user "${userID}"
 
   echo "Generating queues for user id ${userID}"
 
@@ -131,12 +186,14 @@ rm -rf "${USERS_DIR}"
 
 if [[ "$1" == "--ds" ]]; then
   echo "Downloading samples..."
-  download_samples > /dev/null 2>&1
+  download_samples
 fi
+
+get_file_browser_admin_auth_token
 
 for i in {1..10}; do
   echo "Creating user ${i} queues"
-  create_user_email_queues > /dev/null 2>&1
+  create_user_email_queues
 done
 
 
