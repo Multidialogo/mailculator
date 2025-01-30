@@ -122,7 +122,7 @@ create_user_email_queues() {
   local total_queues=$((RANDOM % 3 + 1))
   echo "Generating queues for user id ${userID}"
 
-  for ((q=1; q<${total_queues}; q++)); do
+  for ((q=1; q<=${total_queues}; q++)); do
     local queueUUID=$(uuidgen)
     echo "Generating queue ${queueUUID} for user id ${userID}"
 
@@ -130,12 +130,12 @@ create_user_email_queues() {
     local request_body='{"data":['
 
     # Loop through the number of messages and create a unique messageUUID for each
-    local total_messages=$((RANDOM % 120 +1))
-    for ((i=1; i<total_messages; i++)); do
-      echo "Generating ${i} attachments for queue ${queueUUID} for user id ${userID}"
+    local total_messages=$((RANDOM % 4000 +1))
+    for ((i=1; i<=total_messages; i++)); do
+      echo "Generating ${i} messages for queue ${queueUUID} for user id ${userID}"
 
       # Call get_random_files to get an array of random files
-      local total_attachments=$((RANDOM % 8 + 1))
+      local total_attachments=$((RANDOM % 12 + 1))
       local files=($(get_random_files ${total_attachments}))
 
       # Construct the attachments JSON
@@ -176,10 +176,13 @@ EOF
     # Close the JSON array after the loop
     request_body="$request_body]}"
 
-    # Send all messages for this queue in a single request
+    # Save request_body in text file and then send it via curl
+    echo "${request_body}" > ./tmp/request_body.json
+
+    # Usa curl per inviare la richiesta con il corpo del file
     curl -X POST "${CREATE_QUEUES_URL}" \
       -H "Content-Type: application/json" \
-      -d "${request_body}"
+      -d @./tmp/request_body.json
   done
 
   echo "Generating user on filebrowser server"
