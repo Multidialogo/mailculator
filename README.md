@@ -1,4 +1,4 @@
-# MailCulator
+# Mailculator
 
 The Mailculator project is a robust open-source platform designed for high-volume email delivery using AWS SES. It offers a powerful API for submitting email queues and individual messages, with user-based differentiation to ensure precise control over email dispatching.
 
