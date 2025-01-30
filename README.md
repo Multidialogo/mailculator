@@ -6,6 +6,37 @@ Beyond just sending emails, Mailculator provides a comprehensive solution for mo
 
 With its scalable architecture and focus on efficiency, Mailculator is an ideal choice for developers and businesses looking for a reliable, user-centric email dispatch system.
 
+## Services
+
+Mailculator is divided in 3 services:
+
+## http acceptance API
+
+@see https://github.com/Multidialogo/mailculator-server
+
+Acceptance API allows to create message queues, grouped by user.
+
+### Resources
+
+- Needs an input directory that must be shared via NFS with the caller.
+- Shares with the other two services a "maildir" directory (via NFS).
+
+## workload processor
+
+@see https://github.com/Multidialogo/mailculator-processor
+
+### Resources
+
+- Shares with the other two services a "maildir" directory (via NFS).
+
+## maildir browser
+
+@see https://github.com/Multidialogo/mailculator-filebrowser
+
+### Resources
+
+- Shares with the other two services a "maildir" directory (via NFS).
+
 ## Start with docker compose and development images:
 
 ```bash
