@@ -125,7 +125,7 @@ create_user_email_queues() {
 
   echo "Generating queues for user id ${userID}"
 
-  for ((q=0; q<$((RANDOM % 3)); q++)); do
+  for ((q=1; q<$((RANDOM % 3)); q++)); do
     local queueUUID=$(uuidgen)
     echo "Generating queue ${queueUUID} for user id ${userID}"
 
@@ -134,7 +134,7 @@ create_user_email_queues() {
 
     # Loop through the number of messages and create a unique messageUUID for each
     local total_messages=$((RANDOM % 100))
-    for ((i=0; i<total_messages; i++)); do
+    for ((i=1; i<total_messages; i++)); do
       echo "Generating ${i} attachments for queue ${queueUUID} for user id ${userID}"
 
       # Call get_random_files to get an array of random files
