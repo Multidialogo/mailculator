@@ -53,7 +53,7 @@ configuration.
 ### Start the services locally
 
 ```bash
-docker compose --env-file .env.dev -f docker-compose.yml up
+docker compose --env-file .env.dev -f docker-compose.yml up --force-recreate
 ```
 
 ### Create some dummy local data
@@ -65,5 +65,8 @@ sudo chown -R "$(whoami):$(id -gn)" ./tmp && \
 sudo ./generate_dummies.sh --ds
 ```
 
-Check stuff:
+### Check stuff on local filebrowser instance
+
 Go to http://127.0.0.1:8102 and login with "admin" "admin".
+
+If you want to access as an user username is always equal to userId and password to password(userId).
