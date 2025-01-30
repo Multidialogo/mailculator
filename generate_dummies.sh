@@ -118,14 +118,11 @@ EOF
 
 # Create email queues for a user
 create_user_email_queues() {
-  local userID=$((RANDOM % 1000))
-
-  echo "Generating user on filebrowser server"
-  generate_filebrowser_user "${userID}"
-
+  local userID=$((RANDOM % 10000000))
+  local total_queues=$((RANDOM % 3 + 1))
   echo "Generating queues for user id ${userID}"
 
-  for ((q=1; q<$((RANDOM % 3)); q++)); do
+  for ((q=1; q<${total_queues}; q++)); do
     local queueUUID=$(uuidgen)
     echo "Generating queue ${queueUUID} for user id ${userID}"
 
@@ -133,12 +130,13 @@ create_user_email_queues() {
     local request_body='{"data":['
 
     # Loop through the number of messages and create a unique messageUUID for each
-    local total_messages=$((RANDOM % 100))
+    local total_messages=$((RANDOM % 120 +1))
     for ((i=1; i<total_messages; i++)); do
       echo "Generating ${i} attachments for queue ${queueUUID} for user id ${userID}"
 
       # Call get_random_files to get an array of random files
-      local files=($(get_random_files $((RANDOM % 6))))
+      local total_attachments=$((RANDOM % 8 + 1))
+      local files=($(get_random_files ${total_attachments}))
 
       # Construct the attachments JSON
       local attachments_json="[]"
@@ -168,7 +166,7 @@ EOF
 )
 
       # Append the message to the request_body array
-      if [[ $i -gt 0 ]]; then
+      if [[ $i -gt 1 ]]; then
         request_body="$request_body,$message"
       else
         request_body="$request_body$message"
@@ -178,13 +176,14 @@ EOF
     # Close the JSON array after the loop
     request_body="$request_body]}"
 
-    echo "\n\nREQUEST\n\n${request_body}\n\n"
-
     # Send all messages for this queue in a single request
     curl -X POST "${CREATE_QUEUES_URL}" \
       -H "Content-Type: application/json" \
-      -d "$request_body"
+      -d "${request_body}"
   done
+
+  echo "Generating user on filebrowser server"
+  generate_filebrowser_user "${userID}"
 }
 
 # Cleanup existing directories
@@ -192,7 +191,7 @@ rm -rf "${OUTBOX_DIR}/users"
 rm -rf "${USERS_DIR}"
 
 # If the flag "--ds" is passed, download samples
-if [[ "$1" == "--ds" ]]; then
+if [[ "${1:-}" == "--ds" ]]; then
   echo "Downloading samples..."
   download_samples
 fi
@@ -201,7 +200,7 @@ fi
 get_file_browser_admin_auth_token
 
 # Create users and their email queues
-for i in {1..1000}; do
+for i in {1..20}; do
   echo "Creating user ${i} queues"
   create_user_email_queues
 done
