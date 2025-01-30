@@ -72,6 +72,7 @@ Once built, you will have the required Docker images on your local machine.
 Use Docker Compose to spin up the services:
 
 ```bash
+docker compose --env-file .env.dev down -v --remove-orphans && \
 docker compose --env-file .env.dev -f docker-compose.yml up --force-recreate
 ```
 
