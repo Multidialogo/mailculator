@@ -37,7 +37,18 @@ Acceptance API allows to create message queues, grouped by user.
 
 - Shares with the other two services a "maildir" directory (via NFS).
 
-## Start with docker compose and development images:
+## Quick start with docker compose:
+
+### Retrieve development service images
+
+You can build service images from each of the service repository and following instructions:
+
+- @see https://github.com/Multidialogo/mailculator-server/README.md
+- @see https://github.com/Multidialogo/mailculator-processor/README.md
+- @see https://github.com/Multidialogo/mailculator-filebrowser/README.md
+
+This will give you on your local host the set of the three docker development images used in the next docker-compose, 
+configuration:
 
 ```bash
 docker compose --env-file .env.dev -f docker-compose.yml up
