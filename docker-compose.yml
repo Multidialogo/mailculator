@@ -1,8 +1,13 @@
 services:
   server:
     image: "mailculators-${IMAGE_SUFFIX}"
+    environment:
+      APP_DATA_PATH: "/var/lib/mailculator-server"
+      INPUT_PATH: "/input"
+      OUTBOX_PATH: "/maildir/outbox"
     volumes:
-      - ./data:/var/lib/mailculator-server
+      - ./data/input:/var/lib/mailculator-server/input
+      - ./data/maildir:/var/lib/mailculator-server/maildir
     ports:
       - "127.0.0.1:8101:8080"
     networks:
@@ -10,6 +15,16 @@ services:
 
   processor:
     image: "mailculatorp-${IMAGE_SUFFIX}"
+    environment:
+      ENV: "DEV"
+      APP_DATA_PATH: "/var/lib/mailculator-processor/maildir"
+      OUTBOX_PATH: "/outbox"
+      CHECK_INTERVAL: 6
+      LAST_MOD_INTERVAL: 15
+      EMPTY_DIR_INTERVAL: 120
+      AWS_ACCESS_KEY_ID: "your-access-key-id"
+      AWS_SECRET_ACCESS_KEY: "your-secret-access-key"
+      AWS_REGION: "your-region"
     volumes:
       - ./data/maildir:/var/lib/mailculator-processor/maildir
     networks:
