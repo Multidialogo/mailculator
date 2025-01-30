@@ -1,72 +1,123 @@
 # Mailculator
 
-The Mailculator project is a robust open-source platform designed for high-volume email delivery using AWS SES. It offers a powerful API for submitting email queues and individual messages, with user-based differentiation to ensure precise control over email dispatching.
+Mailculator is a powerful open-source platform designed for high-volume email delivery using AWS SES. It provides developers and businesses with a scalable, user-centric solution for managing outbound email communication. With its focus on efficiency and precision, Mailculator offers robust tools for submitting email queues, tracking delivery statuses, and optimizing email campaigns.
 
-Beyond just sending emails, Mailculator provides a comprehensive solution for monitoring and managing outbound communication. Through both a web interface and an API, users can track sent messages, review delivery statuses, and analyze failures, enabling better troubleshooting and optimization of email campaigns.
+## Key Features
 
-With its scalable architecture and focus on efficiency, Mailculator is an ideal choice for developers and businesses looking for a reliable, user-centric email dispatch system.
+- **High-Volume Email Delivery:** Built to handle large-scale email dispatching with AWS SES.
+- **User-Based Differentiation:** Provides granular control over email queues and individual messages.
+- **Monitoring & Management:** Includes tools to track sent messages, analyze delivery statuses, and troubleshoot failures.
+- **Web Interface & API:** Offers flexibility for users to manage their communication via a modern web interface or programmatically through APIs.
+- **Scalable Architecture:** Designed to meet the needs of both small teams and enterprise-scale operations.
+
+---
 
 ## Services
 
-Mailculator is divided in 3 services:
+Mailculator is composed of three interconnected services:
 
-## http acceptance API
+### 1. HTTP Acceptance API
 
-@see https://github.com/Multidialogo/mailculator-server
+This API handles the creation of message queues, grouped by user, and serves as the entry point for email submission.
 
-Acceptance API allows to create message queues, grouped by user.
+#### Resources
 
-### Resources
+- Requires an input directory shared via NFS with the caller.
+- Shares a "maildir" directory (via NFS) with the other two services.
 
-- Needs an input directory that must be shared via NFS with the caller.
-- Shares with the other two services a "maildir" directory (via NFS).
+Repository: [mailculator-server](https://github.com/Multidialogo/mailculator-server)
 
-## workload processor
+---
 
-@see https://github.com/Multidialogo/mailculator-processor
+### 2. Workload Processor
 
-### Resources
+The workload processor is responsible for managing and processing email queues, ensuring timely delivery of messages.
 
-- Shares with the other two services a "maildir" directory (via NFS).
+#### Resources
 
-## maildir browser
+- Shares a "maildir" directory (via NFS) with the other two services.
 
-@see https://github.com/Multidialogo/mailculator-filebrowser
+Repository: [mailculator-processor](https://github.com/Multidialogo/mailculator-processor)
 
-### Resources
+---
 
-- Shares with the other two services a "maildir" directory (via NFS).
+### 3. Maildir Browser
 
-## Quick start with docker compose:
+The Maildir Browser provides a user-friendly web interface to explore and manage the "maildir" directory. Users can review sent messages, inspect delivery statuses, and analyze failures.
 
-### Retrieve development service images
+#### Resources
 
-You can build service images from each of the service repository and following instructions:
+- Shares a "maildir" directory (via NFS) with the other two services.
 
-- @see https://github.com/Multidialogo/mailculator-server/README.md
-- @see https://github.com/Multidialogo/mailculator-processor/README.md
-- @see https://github.com/Multidialogo/mailculator-filebrowser/README.md
+Repository: [mailculator-filebrowser](https://github.com/Multidialogo/mailculator-filebrowser)
 
-This will give you on your local host the set of the three docker development images used in the next docker-compose, 
-configuration.
+---
 
-### Start the services locally
+## Quick Start with Docker Compose
+
+### Step 1: Retrieve Development Service Images
+
+To set up Mailculator locally, you need to build the service images for the three components. Follow the instructions in each repository:
+
+- [Mailculator Server](https://github.com/Multidialogo/mailculator-server/README.md)
+- [Mailculator Processor](https://github.com/Multidialogo/mailculator-processor/README.md)
+- [Mailculator Filebrowser](https://github.com/Multidialogo/mailculator-filebrowser/README.md)
+
+Once built, you will have the required Docker images on your local machine.
+
+---
+
+### Step 2: Start the Services Locally
+
+Use Docker Compose to spin up the services:
 
 ```bash
 docker compose --env-file .env.dev -f docker-compose.yml up --force-recreate
 ```
 
-### Create some dummy local data
+This command uses the `.env.dev` file for environment variables and ensures the services are rebuilt and started fresh.
 
-Send some dummy queues:
+---
+
+### Step 3: Generate Dummy Data
+
+Create sample email queues for testing:
+
 ```bash
 sudo chown -R "$(whoami):$(id -gn)" ./data && \
 sudo chown -R "$(whoami):$(id -gn)" ./tmp && \
-sudo ./generate_dummies.sh --ds
+sudo ./generate_dummies.sh --ds > generate_dummies.log 2>&1
 ```
 
-### Check stuff on local filebrowser instance
+This command prepares the necessary directories and generates dummy data for testing purposes. The output is logged to `generate_dummies.log`.
 
-Go to http://127.0.0.1:8102 and login with "admin" "admin".
+---
 
-If you want to access as an user username is always equal to userId and password to password(userId).
+### Step 4: Access the Maildir Browser
+
+Open the local Maildir Browser instance in your web browser:
+
+[http://127.0.0.1:8102](http://127.0.0.1:8102)
+
+#### Default Login Credentials
+
+- **Admin Access:**
+
+    - Username: `admin`
+    - Password: `admin`
+
+- **User Access:**
+
+    - Username: `userId` (replace with the actual user ID)
+    - Password: `password(userId)`
+
+---
+
+## Contributing
+
+Mailculator is open source and welcomes contributions from the community. If you'd like to contribute, please refer to the contribution guidelines in each service repository.
+
+---
+
+With Mailculator, you can efficiently manage high-volume email delivery while maintaining granular control and monitoring. Start using Mailculator today and elevate your email campaigns to the next level!
+
