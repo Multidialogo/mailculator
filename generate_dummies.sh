@@ -178,6 +178,8 @@ EOF
     # Close the JSON array after the loop
     request_body="$request_body]}"
 
+    echo "\n\nREQUEST\n\n${request_body}\n\n"
+
     # Send all messages for this queue in a single request
     curl -X POST "${CREATE_QUEUES_URL}" \
       -H "Content-Type: application/json" \
