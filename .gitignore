@@ -1,3 +1,4 @@
 data
-!data/input/.gitkeep
+!data/input/dummies
 !data/maildir/.gitkeep
+tmp
