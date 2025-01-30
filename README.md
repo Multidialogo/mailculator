@@ -48,11 +48,15 @@ You can build service images from each of the service repository and following i
 - @see https://github.com/Multidialogo/mailculator-filebrowser/README.md
 
 This will give you on your local host the set of the three docker development images used in the next docker-compose, 
-configuration:
+configuration.
+
+### Start the services locally
 
 ```bash
 docker compose --env-file .env.dev -f docker-compose.yml up
 ```
+
+### Create some dummy local data
 
 Send some dummy queues:
 ```bash
