@@ -17,7 +17,7 @@ services:
     image: "mailculatorp-${IMAGE_SUFFIX}"
     environment:
       ENV: "DEV"
-      APP_DATA_PATH=: "/var/lib/mailculator-processor/maildir"
+      APP_DATA_PATH: "/var/lib/mailculator-processor/maildir"
       OUTBOX_PATH: "/outbox"
       CHECK_INTERVAL: 6
       LAST_MOD_INTERVAL: 15

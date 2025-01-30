@@ -16,5 +16,8 @@ Send some dummy queues:
 ```bash
 sudo chown -R michele:michele ./data && \
 sudo chown -R michele:michele ./tmp && \
-sudo ./generate_dummies.sh
+sudo ./generate_dummies.sh --ds
 ```
+
+Check stuff:
+Go to http://127.0.0.1:8102 and login with "admin" "admin".

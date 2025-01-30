@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CREATE_QUEUES_URL="http://localhost:8101/email-queues"
-DATA_DIR="./data"
-CONTAINER_DATA_DIR="/var/lib/mailculator-server"
-DUMMY_FILES_DIR="${DATA_DIR}/input/dummies"
+LOCAL_INPUT_DUMMY_FILES_DIR="./data/input"
+DUMMY_FILES_DIR="${LOCAL_INPUT_DUMMY_FILES_DIR}/dummies"
+OUTBOX_DIR="./data/maildir/outbox"
 
 download_samples() {
   rm -rf "${DUMMY_FILES_DIR}"
@@ -52,68 +52,84 @@ get_random_files() {
   # Randomly shuffle the files and select the random_count
   local selected_files=()
   for i in $(shuf -i 0-$(($file_count - 1)) -n $random_count); do
-    # Substitute $DATA_DIR with $CONTAINER_DATA_DIR in the selected file path
-    selected_files+=("${files[$i]//${DATA_DIR}/${CONTAINER_DATA_DIR}}")
+    # Substitute $LOCAL_INPUT_DUMMY_FILES_DIR with $CONTAINER_LOCAL_INPUT_DUMMY_FILES_DIR in the selected file path
+    selected_files+=("${files[$i]//${LOCAL_INPUT_DUMMY_FILES_DIR}/}")
   done
 
   # Return the selected files as an array
   echo "${selected_files[@]}"
 }
 
-
 create_email_queue() {
-  local userID=$(uuidgen)
+  local userID=$((RANDOM % 1000))
   local queueUUID=$(uuidgen)
-  local messageUUID=$(uuidgen)
 
-  # Call get_random_files to get an array of random files
-  local files=($(get_random_files ${1}))
+  # Number of messages to create
+  local num_messages=$((RANDOM % 100))
 
-  # Construct the request body JSON, including files as attachments
-  local attachments_json="[]"
-  for file in "${files[@]}"; do
-    attachments_json=$(echo "$attachments_json" | jq ". + [\"$file\"]")
-  done
+  # Start the JSON array for the messages
+  local request_body='{"data":['
 
-  local request_body=$(cat <<EOF
+  # Loop through the number of messages and create a unique messageUUID for each
+  for ((i=0; i<num_messages; i++)); do
+    # Call get_random_files to get an array of random files
+    local random_attach_number=$((RANDOM % 6))
+    local files=($(get_random_files ${random_attach_number}))
+    # Construct the attachments JSON
+    local attachments_json="[]"
+    for file in "${files[@]}"; do
+      attachments_json=$(echo "$attachments_json" | jq ". + [\"$file\"]")
+    done
+
+    local messageUUID=$(uuidgen)
+
+    # Construct each message's JSON object
+    local message=$(cat <<EOF
 {
-  "data": {
-    "id": "$userID:$queueUUID:$messageUUID",
-    "type": "email",
-    "attributes": {
-      "from": "sender@example.com",
-      "replyTo": "replyto@example.com",
-      "to": "recipient@example.com",
-      "subject": "Test Email",
-      "bodyHTML": "<h1>Hello</h1><p>This is a test email with attachments.</p>",
-      "bodyText": "Hello, This is a test email with attachments.",
-      "attachments": $attachments_json,
-      "customHeaders": {
-        "X-Custom-Header": "CustomValue"
-      }
+  "id": "$userID:$queueUUID:$messageUUID",
+  "type": "email",
+  "attributes": {
+    "from": "sender@example.com",
+    "replyTo": "replyto@example.com",
+    "to": "recipient@example.com",
+    "subject": "Test Email $i",
+    "bodyHTML": "<h1>Hello</h1><p>This is a test email with attachments.</p>",
+    "bodyText": "Hello, This is a test email with attachments.",
+    "attachments": $attachments_json,
+    "customHeaders": {
+      "X-Custom-Header": "CustomValue"
     }
   }
 }
 EOF
 )
+
+    # Append the message to the request_body array
+    if [[ $i -gt 0 ]]; then
+      request_body="$request_body,$message"
+    else
+      request_body="$request_body$message"
+    fi
+  done
+
+  # Close the JSON array
+  request_body="$request_body]}"
+
   # Use curl to call the API with the request body
   curl -X POST "${CREATE_QUEUES_URL}" \
     -H "Content-Type: application/json" \
     -d "$request_body"
 }
 
-# Check if --ds option is passed
 if [[ "$1" == "--ds" ]]; then
   download_samples
 fi
 
-# Loop to call create_email_queue 10 times with random number of files (1 to 5)
+rm -rf "${OUTBOX_DIR}"
 for i in {1..10}; do
-  # Generate a random number between 1 and 5
-  random_files_count=$((RANDOM % 5 + 1))
 
-  echo "Creating email queue #$i with $random_files_count random attachments"
-  create_email_queue $random_files_count  # Pass the random number of files to attach
+  echo "Creating email queue #$i"
+  create_email_queue
 done
 
 
