@@ -1,0 +1,29 @@
+services:
+  server:
+    image: "mailculators-${IMAGE_SUFFIX}"
+    volumes:
+      - ./data:/var/lib/mailculator-server
+    ports:
+      - "127.0.0.1:8101:8080"
+    networks:
+      - mailculator-network
+
+  processor:
+    image: "mailculatorp-${IMAGE_SUFFIX}"
+    volumes:
+      - ./data/maildir:/var/lib/mailculator-processor/maildir
+    networks:
+      - mailculator-network
+
+  filebrowser:
+    image: "mailculatorf-${IMAGE_SUFFIX}"
+    volumes:
+      - ./data/maildir:/srv/maildir
+    ports:
+      - "127.0.0.1:8102:80"
+    networks:
+      - mailculator-network
+
+networks:
+  mailculator-network:
+    driver: bridge
