@@ -130,12 +130,12 @@ create_user_email_queues() {
     local request_body='{"data":['
 
     # Loop through the number of messages and create a unique messageUUID for each
-    local total_messages=$((RANDOM % 4000 +1))
+    local total_messages=$((RANDOM % 119 +1))
     for ((i=1; i<=total_messages; i++)); do
       echo "Generating ${i} messages for queue ${queueUUID} for user id ${userID}"
 
       # Call get_random_files to get an array of random files
-      local total_attachments=$((RANDOM % 12 + 1))
+      local total_attachments=$((RANDOM % 9 + 1))
       local files=($(get_random_files ${total_attachments}))
 
       # Construct the attachments JSON
@@ -203,7 +203,7 @@ fi
 get_file_browser_admin_auth_token
 
 # Create users and their email queues
-for i in {1..20}; do
+for i in {1..100}; do
   echo "Creating user ${i} queues"
   create_user_email_queues
 done
