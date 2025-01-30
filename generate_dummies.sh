@@ -201,7 +201,7 @@ fi
 get_file_browser_admin_auth_token
 
 # Create users and their email queues
-for i in {1..10}; do
+for i in {1..1000}; do
   echo "Creating user ${i} queues"
   create_user_email_queues
 done
