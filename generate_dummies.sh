@@ -15,10 +15,10 @@ FB_USER_CREATE_URL="http://localhost:8102/api/users"
 FB_ADMIN_USERNAME="admin"
 FB_ADMIN_PASSWORD="admin"
 
-MAX_QUEUES_PER_USER=$((3 -1))
+MAX_QUEUES_PER_USER=$((8 -1))
 MAX_MESSAGES_PER_QUEUE=$((4000 -1))
-AVERAGE_MAX_MESSAGES_PER_QUEUE=$((80 -1))
-TOTAL_USERS=4
+AVERAGE_MAX_MESSAGES_PER_QUEUE=$((100 -1))
+TOTAL_USERS=5
 
 TOTAL_EXPECTED_GENERATED_MESSAGES=0
 TOTAL_EXPECTED_GENERATED_QUEUES=0
@@ -33,10 +33,10 @@ download_samples() {
 
   echo "Downloading dog poop pictures dataset..."
   # Download the dataset
-  curl -L -o ./tmp/dog-poop-dataset.zip https://www.kaggle.com/api/v1/datasets/download/wengjiyao/dog-poop-dataset
+  curl -L -o ./tmp/dog-poop-dataset.zip https://www.kaggle.com/api/v1/datasets/download/wengjiyao/dog-poop-dataset  > /dev/null 2>&1
 
   # Extract the dataset to the target directory
-  unzip ./tmp/dog-poop-dataset.zip -d ./tmp/dog-poop-dataset
+  unzip ./tmp/dog-poop-dataset.zip -d ./tmp/dog-poop-dataset > /dev/null 2>&1
 
   mkdir -p "${DUMMY_FILES_DIR}/pictures"
   find ./tmp/dog-poop-dataset/dpd2024/test/poop/ -type f ! -name '*_frame_*' -exec mv {} "${DUMMY_FILES_DIR}/pictures" \;
@@ -60,7 +60,7 @@ download_samples() {
     FILENAME=$(basename "$FILE_URI")
 
     # Download the file using curl
-    curl -L -o "${DUMMY_FILES_DIR}/pdf/${FILENAME}" "${FILE_URI}"
+    curl -L -o "${DUMMY_FILES_DIR}/pdf/${FILENAME}" "${FILE_URI}"  > /dev/null 2>&1
   done
 }
 
@@ -220,7 +220,7 @@ rm -rf "${USERS_DIR}"
 # If the flag "--ds" is passed, download samples
 if [[ "${1:-}" == "--ds" ]]; then
   echo "Downloading samples..."
-  download_samples > /dev/null 2>&1
+  download_samples
 fi
 
 # Get the FileBrowser admin token
@@ -238,7 +238,9 @@ echo "${TOTAL_EXPECTED_GENERATED_MESSAGES} generated messages"
 
 echo "Checking number of produced messages"
 
-TOTAL_GENERATED_MESSAGES=$(find ${USERS_DIR} -type f -name "*.EML" | wc -l)
+sleep 36
+
+TOTAL_GENERATED_MESSAGES=$(find "${USERS_DIR}" -type f -name "*.EML" | wc -l)
 
 echo "${TOTAL_GENERATED_MESSAGES} generated messages"
 
