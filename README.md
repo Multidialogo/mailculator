@@ -86,7 +86,7 @@ Create sample email queues for testing:
 ```bash
 sudo chown -R "$(whoami):$(id -gn)" ./data && \
 sudo chown -R "$(whoami):$(id -gn)" ./tmp && \
-sudo ./generate_dummies.sh --ds > generate_dummies.log 2>&1
+sudo ./generate_dummies.sh > generate_dummies.log 2>&1
 ```
 
 This command prepares the necessary directories and generates dummy data for testing purposes. The output is logged to `generate_dummies.log`.

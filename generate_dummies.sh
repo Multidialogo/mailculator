@@ -26,10 +26,7 @@ TOTAL_EXPECTED_GENERATED_QUEUES=0
 # Download sample datasets
 download_samples() {
   rm -rf "${DUMMY_FILES_DIR}"
-  rm -rf ./tmp
-
   mkdir -p "${DUMMY_FILES_DIR}"
-  mkdir -p ./tmp
 
   echo "Downloading dog poop pictures dataset..."
   # Download the dataset
@@ -214,13 +211,17 @@ EOF
 }
 
 # Cleanup existing directories
+rm -rf ./tmp
+mkdir -p ./tmp
 rm -rf "${OUTBOX_DIR}/users"
 rm -rf "${USERS_DIR}"
 
-# If the flag "--ds" is passed, download samples
-if [[ "${1:-}" == "--ds" ]]; then
+# Check if --ds or --ds=force is passed, or if DUMMY_FILES_DIR is empty
+if [[ "${1:-}" == "--ds" || "${1:-}" == "--ds=force" || ! "$(ls -A ${DUMMY_FILES_DIR})" ]]; then
   echo "Downloading samples..."
   download_samples
+else
+  echo "Samples directory already contains files, skipping download..."
 fi
 
 # Get the FileBrowser admin token
@@ -243,5 +244,3 @@ sleep 36
 TOTAL_GENERATED_MESSAGES=$(find "${USERS_DIR}" -type f -name "*.EML" | wc -l)
 
 echo "${TOTAL_GENERATED_MESSAGES} generated messages"
-
-
