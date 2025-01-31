@@ -81,7 +81,6 @@ This command uses the `.env.dev` file for environment variables and ensures the 
 ---
 
 ### Step 3: Generate Dummy Data
-
 Create sample email queues for testing:
 
 ```bash
