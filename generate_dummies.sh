@@ -15,6 +15,14 @@ FB_USER_CREATE_URL="http://localhost:8102/api/users"
 FB_ADMIN_USERNAME="admin"
 FB_ADMIN_PASSWORD="admin"
 
+MAX_QUEUES_PER_USER=$((3 -1))
+MAX_MESSAGES_PER_QUEUE=$((4000 -1))
+AVERAGE_MAX_MESSAGES_PER_QUEUE=$((80 -1))
+TOTAL_USERS=4
+
+TOTAL_EXPECTED_GENERATED_MESSAGES=0
+TOTAL_EXPECTED_GENERATED_QUEUES=0
+
 # Download sample datasets
 download_samples() {
   rm -rf "${DUMMY_FILES_DIR}"
@@ -30,7 +38,7 @@ download_samples() {
   unzip ./tmp/dog-poop-dataset.zip -d ./tmp/dog-poop-dataset
 
   mkdir -p "${DUMMY_FILES_DIR}/pictures"
-  mv ./tmp/dog-poop-dataset/dpd2024/test/poop/* "${DUMMY_FILES_DIR}/pictures"
+  find ./tmp/dog-poop-dataset/dpd2024/test/poop/ -type f ! -name '*_frame_*' -exec mv {} "${DUMMY_FILES_DIR}/pictures" \;
 
   mkdir -p "${DUMMY_FILES_DIR}/pdf"
 
@@ -38,6 +46,10 @@ download_samples() {
   PDF_FILES=(
     "https://archive.org/download/thetford-porta-potti-565-chemical-toilet/Thetford%20Porta%20Potti%20565%20chemical%20toilet.pdf"
     "https://archive.org/download/400-a-rubik-instructions-eng-span-5x-7.25-020118/400A_RUBIK_Instructions_Eng%EF%80%A2Span_5x7.25_020118.pdf"
+    "https://archive.org/download/imitation-game-the/Imitation_Game_The.pdf"
+    "https://archive.org/download/TuringTheEnigma/turing%20the%20enigma.pdf"
+    "https://archive.org/download/arxiv-1206.1706/1206.1706.pdf"
+    "https://archive.org/download/arxiv-dg-ga9610016/dg-ga9610016.pdf"
   )
 
   # Loop through the array and download each file
@@ -119,21 +131,30 @@ EOF
 # Create email queues for a user
 create_user_email_queues() {
   local userID=$((RANDOM % 10000000))
-  local total_queues=$((RANDOM % 3 + 1))
-  echo "Generating queues for user id ${userID}"
+  local total_queues=$((RANDOM % MAX_QUEUES_PER_USER + 1))
+  echo "Generating ${total_queues} queues for user id ${userID}"
 
   for ((q=1; q<=${total_queues}; q++)); do
+    TOTAL_EXPECTED_GENERATED_QUEUES=$((TOTAL_EXPECTED_GENERATED_QUEUES + 1))
+
     local queueUUID=$(uuidgen)
-    echo "Generating queue ${queueUUID} for user id ${userID}"
 
     # Start the JSON array for the messages
     local request_body='{"data":['
 
     # Loop through the number of messages and create a unique messageUUID for each
-    local total_messages=$((RANDOM % 119 +1))
+    if [ $((TOTAL_EXPECTED_GENERATED_QUEUES % TOTAL_USERS)) -eq 0 ]; then
+      local total_messages=$((MAX_MESSAGES_PER_QUEUE +1))
+    else
+      local total_messages=$((RANDOM % AVERAGE_MAX_MESSAGES_PER_QUEUE +1))
+    fi
+    echo "Generating ${total_messages} messages for queue ${queueUUID} for user id ${userID}"
     for ((i=1; i<=total_messages; i++)); do
-      echo "Generating ${i} messages for queue ${queueUUID} for user id ${userID}"
-
+      echo -n "."
+      if [  $((i % 120)) -eq 0 ]; then
+        echo ""
+      fi
+      TOTAL_EXPECTED_GENERATED_MESSAGES=$((TOTAL_EXPECTED_GENERATED_MESSAGES + 1))
       # Call get_random_files to get an array of random files
       local total_attachments=$((RANDOM % 9 + 1))
       local files=($(get_random_files ${total_attachments}))
@@ -172,6 +193,7 @@ EOF
         request_body="$request_body$message"
       fi
     done
+    echo ""
 
     # Close the JSON array after the loop
     request_body="$request_body]}"
@@ -196,14 +218,26 @@ rm -rf "${USERS_DIR}"
 # If the flag "--ds" is passed, download samples
 if [[ "${1:-}" == "--ds" ]]; then
   echo "Downloading samples..."
-  download_samples
+  download_samples > /dev/null 2>&1
 fi
 
 # Get the FileBrowser admin token
 get_file_browser_admin_auth_token
 
 # Create users and their email queues
-for i in {1..100}; do
-  echo "Creating user ${i} queues"
-  create_user_email_queues
+for i in $(seq 1 ${TOTAL_USERS}); do
+  echo "Creating queues for user id ${i}..."
+  create_user_email_queues "$i"
 done
+
+echo "${TOTAL_USERS} generated users"
+echo "${TOTAL_EXPECTED_GENERATED_QUEUES} generated queues"
+echo "${TOTAL_EXPECTED_GENERATED_MESSAGES} generated messages"
+
+echo "Checking number of produced messages"
+
+TOTAL_GENERATED_MESSAGES=$(find ${USERS_DIR} -type f -name "*.EML" | wc -l)
+
+echo "${TOTAL_GENERATED_MESSAGES} generated messages"
+
+
