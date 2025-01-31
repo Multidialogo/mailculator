@@ -31,6 +31,7 @@ download_samples() {
   mkdir -p "${DUMMY_FILES_DIR}"
   mkdir -p ./tmp
 
+  echo "Downloading dog poop pictures dataset..."
   # Download the dataset
   curl -L -o ./tmp/dog-poop-dataset.zip https://www.kaggle.com/api/v1/datasets/download/wengjiyao/dog-poop-dataset
 
@@ -52,6 +53,7 @@ download_samples() {
     "https://archive.org/download/arxiv-dg-ga9610016/dg-ga9610016.pdf"
   )
 
+  echo "Downloading pdf books dataset..."
   # Loop through the array and download each file
   for FILE_URI in "${PDF_FILES[@]}"; do
     # Extract the filename from the URL
