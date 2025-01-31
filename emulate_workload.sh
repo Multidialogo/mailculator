@@ -248,5 +248,5 @@ echo "${TOTAL_GENERATED_MESSAGES} generated messages"
 if [ $TOTAL_EXPECTED_GENERATED_MESSAGES -eq $TOTAL_GENERATED_MESSAGES ]; then
   echo "FLAWLESS"
 else
-  echo "FATALITY"                                                                                                                         "
+  echo "FATALITY"
 fi
