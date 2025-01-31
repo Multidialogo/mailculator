@@ -82,11 +82,18 @@ This command uses the `.env.dev` file for environment variables and ensures the 
 
 ### Step 3: Generate Dummy Data
 Create sample email queues for testing:
-
 ```bash
-sudo chown -R "$(whoami):$(id -gn)" ./data && \
-sudo chown -R "$(whoami):$(id -gn)" ./tmp && \
-sudo ./generate_dummies.sh --ds > generate_dummies.log 2>&1
+sudo chown -R "$(whoami):$(id -gn)" ./data ./tmp  && \
+./generate_dummies.sh > generate_dummies.log 2>&1
+```
+
+Meanwhile, you can watch logs with this command:
+```bash
+tail -f "./generate_dummies.log"
+```
+Recreate sample files archive and create sample email queues:
+```bash
+./generate_dummies.sh --df=force
 ```
 
 This command prepares the necessary directories and generates dummy data for testing purposes. The output is logged to `generate_dummies.log`.
