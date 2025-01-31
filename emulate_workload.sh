@@ -234,8 +234,8 @@ for i in $(seq 1 ${TOTAL_USERS}); do
 done
 
 echo "${TOTAL_USERS} generated users"
-echo "${TOTAL_EXPECTED_GENERATED_QUEUES} generated queues"
-echo "${TOTAL_EXPECTED_GENERATED_MESSAGES} generated messages"
+echo "${TOTAL_EXPECTED_GENERATED_QUEUES} expected generated queues"
+echo "${TOTAL_EXPECTED_GENERATED_MESSAGES} expected generated messages"
 
 echo "Checking number of produced messages"
 
@@ -244,3 +244,9 @@ sleep 36
 TOTAL_GENERATED_MESSAGES=$(find "${USERS_DIR}" -type f -name "*.EML" | wc -l)
 
 echo "${TOTAL_GENERATED_MESSAGES} generated messages"
+
+if [ $TOTAL_EXPECTED_GENERATED_MESSAGES -eq $TOTAL_GENERATED_MESSAGES ]; then
+  echo "FLAWLESS"
+else
+  echo "FATALITY"                                                                                                                         "
+fi
