@@ -2,4 +2,4 @@ data
 !data/input/dummies
 !data/maildir/.gitkeep
 tmp
-generate_dummies.log
+emulate_workload.log
