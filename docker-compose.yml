@@ -27,6 +27,8 @@ services:
       AWS_REGION: "your-region"
     volumes:
       - ./data/maildir:/var/lib/mailculator-processor/maildir
+    ports:
+      - "127.0.0.1:9091:9090"
     networks:
       - mailculator-network
 
