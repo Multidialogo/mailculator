@@ -120,6 +120,12 @@ Open the local Maildir Browser instance in your web browser:
 
 ---
 
+#### Access Prometheus live log stats for processor
+
+Open prometheus stats in your web browser:
+
+[http://127.0.0.1:9091](http://127.0.0.1:8102)
+
 ## Contributing
 
 Mailculator is open source and welcomes contributions from the community. If you'd like to contribute, please refer to the contribution guidelines in each service repository.
