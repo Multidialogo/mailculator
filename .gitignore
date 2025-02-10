@@ -1,5 +1,8 @@
-data
-!data/input/dummies
+data/input
+!data/input/.gitkeep
+data/localstack
+!data/localstack/.gitkeep
+data/maildir
 !data/maildir/.gitkeep
 tmp
 emulate_workload.log
