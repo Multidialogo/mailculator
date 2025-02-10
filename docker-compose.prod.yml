@@ -1,0 +1,24 @@
+services:
+  redis:
+    container_name: "mailculatorp-redis-${IMAGE_SUFFIX}"
+    image: "redis:latest"
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - mailculator-network
+
+  localstack:
+    container_name: "mailculatorp-ses-${IMAGE_SUFFIX}"
+    image: "localstack/localstack:latest"
+    environment:
+      - SERVICES=ses
+      - DEFAULT_REGION=us-east-1
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./data/localstack:/tmp/localstack"
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - mailculator-network

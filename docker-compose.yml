@@ -1,5 +1,6 @@
 services:
   server:
+    container_name: "mailculators-${IMAGE_SUFFIX}"
     image: "mailculators-${IMAGE_SUFFIX}"
     environment:
       APP_DATA_PATH: "/var/lib/mailculator-server"
@@ -14,6 +15,7 @@ services:
       - mailculator-network
 
   processor:
+    container_name: "mailculatorp-${IMAGE_SUFFIX}"
     image: "mailculatorp-${IMAGE_SUFFIX}"
     environment:
       ENV: "DEV"
@@ -33,6 +35,7 @@ services:
       - mailculator-network
 
   filebrowser:
+    container_name: "mailculatorf-${IMAGE_SUFFIX}"
     image: "mailculatorf-${IMAGE_SUFFIX}"
     volumes:
       - ./data/maildir:/srv/maildir
